@@ -47,7 +47,7 @@ public class SongStorageImpl implements SongStorage {
             return songDto;
         } catch (IOException | UnsupportedTagException | ResourceAccessException | InvalidDataException e ) {
             //fix error and return
-            return songDto;
+            throw new RuntimeException();
         }
 
     }

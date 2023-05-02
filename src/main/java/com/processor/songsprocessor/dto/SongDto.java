@@ -3,6 +3,7 @@ package com.processor.songsprocessor.dto;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.retry.RetryCallback;
 
 @Getter
 @Setter

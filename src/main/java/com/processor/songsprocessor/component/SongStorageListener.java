@@ -7,11 +7,10 @@ import com.processor.songsprocessor.service.SongService;
 import com.processor.songsprocessor.service.SongStorage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
-
-import java.awt.*;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 public class SongStorageListener {
@@ -20,30 +19,22 @@ public class SongStorageListener {
     SongStorage songStorage;
 
     @Autowired
-    Properties properties;
-
-    @Autowired
     SongService songService;
 
     @RabbitListener(queues = MqConfig.QUEUE_NAME)
-    public void Listener(RabbitMessage rabbitMessage) {
-        SongDto songDto = null;
-
-
-            SongDto songMetaData = tryGetMetaDataFromStorage(rabbitMessage);
-            songDto = songService.saveSongMeta(songMetaData);
-
-
-        System.out.println(songDto);
+    @Retryable(value = RuntimeException.class, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    public void listener(RabbitMessage rabbitMessage) {
+        SongDto execute = tryGetMetaDataFromStorage(rabbitMessage);
     }
+
+    @Recover
+    public void listenerIsDown(){
+    }
+
 
     private SongDto tryGetMetaDataFromStorage(RabbitMessage rabbitMessage) {
-
-
-
-            return songStorage.getSongMetaData(rabbitMessage.getId(), rabbitMessage.getName());
-
+        SongDto songMetaData = songStorage.getSongMetaData(rabbitMessage.getId(), rabbitMessage.getName());
+        return songService.saveSongMeta(songMetaData);
     }
-
 
 }

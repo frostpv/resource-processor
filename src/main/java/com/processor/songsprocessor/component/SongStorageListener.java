@@ -31,7 +31,6 @@ public class SongStorageListener {
     public void listenerIsDown(){
     }
 
-
     private SongDto tryGetMetaDataFromStorage(RabbitMessage rabbitMessage) {
         SongDto songMetaData = songStorage.getSongMetaData(rabbitMessage.getId(), rabbitMessage.getName());
         return songService.saveSongMeta(songMetaData);

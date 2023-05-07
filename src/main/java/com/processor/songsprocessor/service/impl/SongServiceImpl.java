@@ -1,5 +1,6 @@
 package com.processor.songsprocessor.service.impl;
 
+import com.processor.songsprocessor.component.ExternalServicesProperties;
 import com.processor.songsprocessor.dto.SongDto;
 import com.processor.songsprocessor.service.SongService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +16,16 @@ import java.util.Collections;
 
 @Service
 public class SongServiceImpl implements SongService {
-    private final static String SONG_SERVICE_HOST = "http://localhost:8082";
-    private final static String SONG_SERVICE_ENDPOINT = "/songs";
-
+    private final static String DEFAULT_SONG_SERVICE_PROTOCOL = "http://";
+    private final static int DEFAULT_SONG_SERVICE_PORT = 8082;
+    private final static String DEFAULT_SONG_SERVICE_HOST = "localhost";
+    private final static String DEFAULT_SONG_SERVICE_ENDPOINT = "/songs";
 
     @Autowired
     RestTemplate restTemplate;
+
+    @Autowired
+    ExternalServicesProperties externalServicesProperties;
 
     @Override
     public SongDto saveSongMeta(SongDto songDto) {
@@ -32,16 +37,47 @@ public class SongServiceImpl implements SongService {
 
         URI uri = null;
         try {
-            uri = new URI(SONG_SERVICE_HOST+SONG_SERVICE_ENDPOINT);
+            getSongServiceUrl();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
 
         ResponseEntity<SongDto> songDtoResponseEntity = restTemplate.postForEntity(uri, songDto, SongDto.class);
-
-
-
-
         return songDtoResponseEntity.getBody();
+    }
+
+    private URI getSongServiceUrl() throws URISyntaxException {
+        StringBuilder storageUrl = new StringBuilder();
+
+        if (checkSongServiceProperties()) {
+            populateUrlFromProperties(storageUrl);
+            return new URI(storageUrl.toString());
+        }
+
+        populateUrlAsDefault(storageUrl);
+        return new URI(storageUrl.toString());
+    }
+
+    private void populateUrlFromProperties(StringBuilder storageUrl) {
+        storageUrl.append(externalServicesProperties.getSongServiceProtocol())
+                .append(externalServicesProperties.getSongServiceHost())
+                .append(externalServicesProperties.getSongServiceEndpoint())
+                .append(":")
+                .append(externalServicesProperties.getSongServicePort());
+    }
+
+    private void populateUrlAsDefault(StringBuilder storageUrl) {
+        storageUrl.append(DEFAULT_SONG_SERVICE_PROTOCOL)
+                .append(DEFAULT_SONG_SERVICE_HOST)
+                .append(DEFAULT_SONG_SERVICE_ENDPOINT)
+                .append(":")
+                .append(DEFAULT_SONG_SERVICE_PORT);
+    }
+
+    private boolean checkSongServiceProperties(){
+        return externalServicesProperties.getSongServiceProtocol() != null
+                && externalServicesProperties.getSongServiceHost() != null
+                && externalServicesProperties.getSongServiceEndpoint() != null
+                && externalServicesProperties.getSongServicePort() != 0;
     }
 }

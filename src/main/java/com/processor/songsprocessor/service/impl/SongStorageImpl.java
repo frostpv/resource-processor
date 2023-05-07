@@ -32,7 +32,6 @@ public class SongStorageImpl implements SongStorage {
 
         String url = HOST+ENDPOINT+id;
 
-
         try {
             byte[] song = restTemplate.getForObject(url, byte[].class);
             songDto = new SongDto();

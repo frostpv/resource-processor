@@ -47,37 +47,30 @@ public class SongServiceImpl implements SongService {
     }
 
     private URI getSongServiceUrl() throws URISyntaxException {
-        StringBuilder storageUrl = new StringBuilder();
+        StringBuilder serviceUrl = new StringBuilder();
 
-        if (checkSongServiceProperties()) {
-            populateUrlFromProperties(storageUrl);
-            return new URI(storageUrl.toString());
+        if (externalServicesProperties.checkSongServiceProperties()) {
+            populateUrlFromProperties(serviceUrl);
+            return new URI(serviceUrl.toString());
         }
 
-        populateUrlAsDefault(storageUrl);
-        return new URI(storageUrl.toString());
+        populateUrlAsDefault(serviceUrl);
+        return new URI(serviceUrl.toString());
     }
 
-    private void populateUrlFromProperties(StringBuilder storageUrl) {
-        storageUrl.append(externalServicesProperties.getSongServiceProtocol())
+    private void populateUrlFromProperties(StringBuilder serviceUrl) {
+        serviceUrl.append(externalServicesProperties.getSongServiceProtocol())
                 .append(externalServicesProperties.getSongServiceHost())
                 .append(externalServicesProperties.getSongServiceEndpoint())
                 .append(":")
                 .append(externalServicesProperties.getSongServicePort());
     }
 
-    private void populateUrlAsDefault(StringBuilder storageUrl) {
-        storageUrl.append(DEFAULT_SONG_SERVICE_PROTOCOL)
+    private void populateUrlAsDefault(StringBuilder serviceUrl) {
+        serviceUrl.append(DEFAULT_SONG_SERVICE_PROTOCOL)
                 .append(DEFAULT_SONG_SERVICE_HOST)
                 .append(DEFAULT_SONG_SERVICE_ENDPOINT)
                 .append(":")
                 .append(DEFAULT_SONG_SERVICE_PORT);
-    }
-
-    private boolean checkSongServiceProperties(){
-        return externalServicesProperties.getSongServiceProtocol() != null
-                && externalServicesProperties.getSongServiceHost() != null
-                && externalServicesProperties.getSongServiceEndpoint() != null
-                && externalServicesProperties.getSongServicePort() != 0;
     }
 }

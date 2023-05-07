@@ -34,4 +34,18 @@ public class ExternalServicesProperties {
 
     @Value("${song.storage.protocol}")
     private String songStorageProtocol;
+
+    public boolean checkSongServiceProperties(){
+        return this.getSongServiceProtocol() != null
+                && this.getSongServiceHost() != null
+                && this.getSongServiceEndpoint() != null
+                && this.getSongServicePort() != 0;
+    }
+
+    public boolean checkSongStorageProperties(){
+        return this.getSongStorageProtocol() != null
+                && this.getSongStorageHost() != null
+                && this.getSongStorageEndpoint() != null
+                && this.getSongStoragePort() != 0;
+    }
 }

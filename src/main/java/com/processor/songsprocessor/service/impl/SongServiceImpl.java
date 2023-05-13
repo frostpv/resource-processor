@@ -26,9 +26,9 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public SongDto saveSongMeta(SongDto songDto) {
-        URI uri = null;
+        URI uri;
         try {
-            getSongServiceUrl();
+           uri = getSongServiceUrl();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -46,16 +46,16 @@ public class SongServiceImpl implements SongService {
     private String getUrlFromProperties() {
         return externalServicesProperties.getSongServiceProtocol() +
                 externalServicesProperties.getSongServiceHost() +
-                externalServicesProperties.getSongServiceEndpoint() +
                 ":" +
-                externalServicesProperties.getSongServicePort();
+                externalServicesProperties.getSongServicePort() +
+                externalServicesProperties.getSongServiceEndpoint() ;
     }
 
     private String getUrlAsDefault() {
         return DEFAULT_SONG_SERVICE_PROTOCOL +
                 DEFAULT_SONG_SERVICE_HOST +
-                DEFAULT_SONG_SERVICE_ENDPOINT +
                 ":" +
-                DEFAULT_SONG_SERVICE_PORT;
+                DEFAULT_SONG_SERVICE_PORT +
+                DEFAULT_SONG_SERVICE_ENDPOINT;
     }
 }

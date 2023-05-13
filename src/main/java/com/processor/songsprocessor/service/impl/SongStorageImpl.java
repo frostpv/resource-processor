@@ -33,7 +33,7 @@ public class SongStorageImpl implements SongStorage {
 
     @Override
     public SongDto getSongMetaData(long id, String name) {
-        SongDto songDto = null;
+        SongDto songDto;
         String url = getSongStorageUrl();
 
         try {
@@ -48,8 +48,7 @@ public class SongStorageImpl implements SongStorage {
             populateSongDto(mp3file, songDto);
             Files.delete(path);
             return songDto;
-        } catch (IOException | UnsupportedTagException | ResourceAccessException | InvalidDataException e ) {
-            //fix error and return
+        } catch (IOException | IllegalArgumentException| UnsupportedTagException | ResourceAccessException | InvalidDataException e ) {
             throw new RuntimeException();
         }
     }
@@ -62,20 +61,20 @@ public class SongStorageImpl implements SongStorage {
     }
 
     private String getUrlFromProperties(StringBuilder storageUrl) {
-        return storageUrl.append(externalServicesProperties.getSongServiceProtocol())
-                .append(externalServicesProperties.getSongServiceHost())
-                .append(externalServicesProperties.getSongServiceEndpoint())
+        return storageUrl.append(externalServicesProperties.getSongStorageProtocol())
+                .append(externalServicesProperties.getSongStorageHost())
                 .append(":")
-                .append(externalServicesProperties.getSongServicePort())
+                .append(externalServicesProperties.getSongStoragePort())
+                .append(externalServicesProperties.getSongStorageEndpoint())
                 .toString();
     }
 
     private String getUrlAsDefault(StringBuilder storageUrl) {
         return storageUrl.append(DEFAULT_SONG_STORAGE_PROTOCOL)
                 .append(DEFAULT_SONG_STORAGE_HOST)
-                .append(DEFAULT_SONG_STORAGE_ENDPOINT)
                 .append(":")
                 .append(DEFAULT_SONG_STORAGE_PORT)
+                .append(DEFAULT_SONG_STORAGE_ENDPOINT)
                 .toString();
     }
 

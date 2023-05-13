@@ -4,15 +4,12 @@ import com.processor.songsprocessor.component.ExternalServicesProperties;
 import com.processor.songsprocessor.dto.SongDto;
 import com.processor.songsprocessor.service.SongService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 
 @Service
 public class SongServiceImpl implements SongService {
@@ -29,12 +26,6 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public SongDto saveSongMeta(SongDto songDto) {
-
-        HttpHeaders headers = new HttpHeaders();
-
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
         URI uri = null;
         try {
             getSongServiceUrl();
@@ -47,30 +38,24 @@ public class SongServiceImpl implements SongService {
     }
 
     private URI getSongServiceUrl() throws URISyntaxException {
-        StringBuilder serviceUrl = new StringBuilder();
-
-        if (externalServicesProperties.checkSongServiceProperties()) {
-            populateUrlFromProperties(serviceUrl);
-            return new URI(serviceUrl.toString());
-        }
-
-        populateUrlAsDefault(serviceUrl);
-        return new URI(serviceUrl.toString());
+        return  externalServicesProperties.checkSongServiceProperties()
+                ? new URI(getUrlFromProperties())
+                : new URI(getUrlAsDefault());
     }
 
-    private void populateUrlFromProperties(StringBuilder serviceUrl) {
-        serviceUrl.append(externalServicesProperties.getSongServiceProtocol())
-                .append(externalServicesProperties.getSongServiceHost())
-                .append(externalServicesProperties.getSongServiceEndpoint())
-                .append(":")
-                .append(externalServicesProperties.getSongServicePort());
+    private String getUrlFromProperties() {
+        return externalServicesProperties.getSongServiceProtocol() +
+                externalServicesProperties.getSongServiceHost() +
+                externalServicesProperties.getSongServiceEndpoint() +
+                ":" +
+                externalServicesProperties.getSongServicePort();
     }
 
-    private void populateUrlAsDefault(StringBuilder serviceUrl) {
-        serviceUrl.append(DEFAULT_SONG_SERVICE_PROTOCOL)
-                .append(DEFAULT_SONG_SERVICE_HOST)
-                .append(DEFAULT_SONG_SERVICE_ENDPOINT)
-                .append(":")
-                .append(DEFAULT_SONG_SERVICE_PORT);
+    private String getUrlAsDefault() {
+        return DEFAULT_SONG_SERVICE_PROTOCOL +
+                DEFAULT_SONG_SERVICE_HOST +
+                DEFAULT_SONG_SERVICE_ENDPOINT +
+                ":" +
+                DEFAULT_SONG_SERVICE_PORT;
     }
 }

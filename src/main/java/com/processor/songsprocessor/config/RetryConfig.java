@@ -13,6 +13,8 @@ import org.springframework.retry.support.RetryTemplate;
 @Configuration
 public class RetryConfig {
 
+
+    // @TODO: this class should be removed
     @Autowired
     Properties properties;
 
@@ -23,9 +25,7 @@ public class RetryConfig {
         FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
         fixedBackOffPolicy.setBackOffPeriod(properties.getRetryTimeout());
 
-
         retryTemplate.setBackOffPolicy(fixedBackOffPolicy);
-
 
         SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
         retryPolicy.setMaxAttempts(properties.getRetryCount());

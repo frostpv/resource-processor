@@ -45,6 +45,7 @@ public class SongStorageImpl implements SongStorage {
             songDto.setResourceId((int) id);
             Mp3File mp3file = new Mp3File(new File(name));
             songDto.setLength(mp3file.getLengthInSeconds() + "- seconds");
+            songDto.setName(name);
             populateSongDto(mp3file, songDto);
             Files.delete(path);
             return songDto;

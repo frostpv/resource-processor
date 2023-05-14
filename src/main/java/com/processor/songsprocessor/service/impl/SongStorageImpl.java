@@ -34,7 +34,7 @@ public class SongStorageImpl implements SongStorage {
     @Override
     public SongDto getSongMetaData(long id, String name) {
         SongDto songDto;
-        String url = getSongStorageUrl();
+        String url = getSongStorageUrl(id);
 
         try {
             byte[] song = restTemplate.getForObject(url, byte[].class);
@@ -53,11 +53,11 @@ public class SongStorageImpl implements SongStorage {
         }
     }
 
-    private String getSongStorageUrl() {
+    private String getSongStorageUrl(long id) {
         StringBuilder storageUrl = new StringBuilder();
         return externalServicesProperties.checkSongStorageProperties()
-                ? getUrlFromProperties(storageUrl)
-                : getUrlAsDefault(storageUrl);
+                ? getUrlFromProperties(storageUrl) + id
+                : getUrlAsDefault(storageUrl) + id;
     }
 
     private String getUrlFromProperties(StringBuilder storageUrl) {

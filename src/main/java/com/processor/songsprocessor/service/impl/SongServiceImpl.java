@@ -4,7 +4,6 @@ import com.processor.songsprocessor.component.ExternalServicesProperties;
 import com.processor.songsprocessor.dto.SongDto;
 import com.processor.songsprocessor.service.SongService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,15 +25,17 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public SongDto saveSongMeta(SongDto songDto) {
+        return restTemplate.postForEntity(getUri(), songDto, SongDto.class).getBody();
+    }
+
+    private URI getUri() {
         URI uri;
         try {
            uri = getSongServiceUrl();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-
-        ResponseEntity<SongDto> songDtoResponseEntity = restTemplate.postForEntity(uri, songDto, SongDto.class);
-        return songDtoResponseEntity.getBody();
+        return uri;
     }
 
     private URI getSongServiceUrl() throws URISyntaxException {

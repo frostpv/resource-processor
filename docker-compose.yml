@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  storage:
+    build: ../song-storage
+    ports:
+      - 8080:8080
+
+  service:
+    build: ../song-service
+    ports:
+      - 8082:8082
+
+  processor:
+    build: ./
+    ports:
+      - 8081:8081
+

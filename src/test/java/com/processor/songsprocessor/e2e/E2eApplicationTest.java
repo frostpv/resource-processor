@@ -1,64 +1,85 @@
 package com.processor.songsprocessor.e2e;
 
+import com.processor.songsprocessor.dto.FileStorageDto;
+import com.processor.songsprocessor.dto.SongDto;
+import io.restassured.http.ContentType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.http.*;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.File;
+
+import java.util.Date;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static io.restassured.RestAssured.config;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class E2eApplicationTest {
-
+    private final static String SONG_SERVICE_URL = "http://35.208.79.123:8082/";
+    private final static String SONG_STORAGE_URL = "http://35.208.79.123:8080/";
+    private final static String RABBIT_MESSENGER_URL = "http://35.209.134.187:15672/";
 
     @Test
-    public void test() throws URISyntaxException, IOException {
-        URI uri = new URI("http://35.208.79.123:8080/resources");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-
-        Path path = Paths.get("cut.mp3");
-        byte[] bytes = Files.readAllBytes(path);
-
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", bytes);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-        RestTemplate restTemplate = new RestTemplate();
-
-        List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
-//Add the Jackson Message converter
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-
-// Note: here we are making this converter to process any kind of response,
-// not only application/*json, which is the default behaviour
-        converter.setSupportedMediaTypes(Collections.singletonList(MediaType.ALL));
-        messageConverters.add(converter);
-        messageConverters.add(new ByteArrayHttpMessageConverter());
-        restTemplate.setMessageConverters(messageConverters);
-
-
-
-
-
-        String response = restTemplate.postForObject(uri, requestEntity, String.class);
+    public void shouldRabbitServerWork(){
+        pingSomeUrl(RABBIT_MESSENGER_URL);
     }
 
+    @Test
+    public void shouldSongStorageWork(){
+        pingSomeUrl(SONG_STORAGE_URL+"resources");
+    }
+
+    @Test
+    public void shouldSongServiceWork(){
+        pingSomeUrl(SONG_SERVICE_URL+ "songs/all");
+    }
+
+    @Test
+    public void shouldMakeAllWhatIWant() throws InterruptedException {
+        FileStorageDto fileStorageDto = given()
+                .param("timestamp", new Date().getTime())
+                .multiPart(new File("deep.mp3"))
+                .accept(ContentType.ANY)
+                .when()
+                .post("http://35.208.79.123:8080/resources")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(FileStorageDto.class);
+
+
+        SongDto[] timestamps = given()
+                .param("timestamp", new Date().getTime())
+                .config(config)
+                .accept(ContentType.ANY)
+                .when()
+                .get(SONG_SERVICE_URL + "songs/all")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(SongDto[].class);
+
+        boolean contains = Stream.of(timestamps)
+                .map(SongDto::getResourceId)
+                .collect(Collectors.toList())
+                .contains(fileStorageDto.getId());
+        assertThat(contains, is(false));
+
+    }
+
+    private void pingSomeUrl(String url){
+        given()
+                .param("timestamp", new Date().getTime())
+                .accept(ContentType.ANY)
+                .when()
+                .get(url)
+                .then()
+                .statusCode(200);
+    }
 }
